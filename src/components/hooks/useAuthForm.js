@@ -81,7 +81,7 @@ const useAuthForm = (isLogin) => {
                     resetForm();
                 }, 2000);
             } else {
-                setErrors({ submit: data.message || 'An error occurred' });
+                setErrors({ submit: data.message || 'Login failed, email or password is incorrect' });
             }
         } catch (error) {
             setErrors({ submit: 'Network error. Please try again.' });
