@@ -8,9 +8,11 @@ import SuccessMessage from './SuccessMessage';
 import AuthFooter from './AuthFooter';
 import useAuthForm from '../hooks/useAuthForm';
 
-const AuthForm = ({ isLogin, onToggleMode }) => {
+const AuthForm = ({ isLogin, onToggleMode, onSuccess }) => {
     const [showPassword, setShowPassword] = useState(false);
-    const { formData, errors, success, loading, handleChange, handleSubmit, resetForm } = useAuthForm(isLogin);
+
+    // Pass onSuccess to the hook
+    const { formData, errors, success, loading, handleChange, handleSubmit, resetForm } = useAuthForm(isLogin, onSuccess);
 
     const handleModeToggle = () => {
         resetForm();

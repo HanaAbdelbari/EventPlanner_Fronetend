@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { signup, login } from '../services/authService';
 
-const useAuthForm = (isLogin) => {
+const useAuthForm = (isLogin, onSuccess) => {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -60,31 +61,24 @@ const useAuthForm = (isLogin) => {
         setSuccess('');
 
         try {
-            const endpoint = isLogin ? '/api/login' : '/api/signup';
-            const payload = isLogin
-                ? { email: formData.email, password: formData.password }
-                : { name: formData.name, email: formData.email, password: formData.password };
+            let data;
+            if (isLogin) {
+                data = await login(formData.email, formData.password);
+            } else {
+                data = await signup(formData.name, formData.email, formData.password);
+            }
 
-            const response = await fetch(`http://localhost:8080${endpoint}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload),
-            });
+            setSuccess(`${isLogin ? 'Login' : 'Sign up'} successful! Redirecting...`);
 
-            const data = await response.json();
-
-            if (response.ok) {
-                setSuccess(`${isLogin ? 'Login' : 'Sign up'} successful! Redirecting...`);
+            // Call onSuccess immediately with the data
+            if (onSuccess) {
                 setTimeout(() => {
                     resetForm();
-                }, 2000);
-            } else {
-                setErrors({ submit: data.message || 'Login failed, email or password is incorrect' });
+                    onSuccess(data);
+                }, 1000); // Reduced to 1 second for faster redirect
             }
         } catch (error) {
-            setErrors({ submit: 'Network error. Please try again.' });
+            setErrors({ submit: error.message });
         } finally {
             setLoading(false);
         }
