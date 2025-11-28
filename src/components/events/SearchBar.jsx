@@ -8,6 +8,7 @@ const SearchBar = ({ onSearch }) => {
     const [showFilters, setShowFilters] = useState(false);
 
     const handleSearch = () => {
+        console.log('Searching with:', { keyword, date, role });
         onSearch({ keyword, date, role });
     };
 
@@ -18,9 +19,14 @@ const SearchBar = ({ onSearch }) => {
         onSearch({ keyword: '', date: '', role: '' });
     };
 
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            handleSearch();
+        }
+    };
+
     return (
         <div className="bg-white rounded-xl shadow-md p-4 mb-6 animate-slideDown">
-            {/* Search Bar */}
             <div className="flex items-center space-x-3">
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -28,16 +34,22 @@ const SearchBar = ({ onSearch }) => {
                         type="text"
                         value={keyword}
                         onChange={(e) => setKeyword(e.target.value)}
+                        onKeyPress={handleKeyPress}
                         placeholder="Search events by title, description, or location..."
                         className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-300 transition-all duration-300"
-                        onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                     />
                 </div>
                 <button
                     onClick={() => setShowFilters(!showFilters)}
-                    className="p-3 rounded-xl border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-300"
+                    className={`p-3 rounded-xl border-2 transition-all duration-300 ${
+                        showFilters
+                            ? 'border-blue-300 bg-blue-50'
+                            : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                    }`}
                 >
-                    <Filter className="w-5 h-5 text-gray-600" />
+                    <Filter className={`w-5 h-5 transition-colors duration-300 ${
+                        showFilters ? 'text-blue-600' : 'text-gray-600'
+                    }`} />
                 </button>
                 <button
                     onClick={handleSearch}
@@ -45,9 +57,16 @@ const SearchBar = ({ onSearch }) => {
                 >
                     Search
                 </button>
+                {(keyword || date || role) && (
+                    <button
+                        onClick={handleClear}
+                        className="px-4 py-3 text-gray-600 hover:text-gray-800 font-medium transition-all duration-300"
+                    >
+                        Clear
+                    </button>
+                )}
             </div>
 
-            {/* Advanced Filters */}
             {showFilters && (
                 <div className="mt-4 pt-4 border-t border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4 animate-slideIn">
                     <div>
@@ -70,14 +89,6 @@ const SearchBar = ({ onSearch }) => {
                             <option value="organizer">Organized by Me</option>
                             <option value="attendee">Invited to</option>
                         </select>
-                    </div>
-                    <div className="md:col-span-2">
-                        <button
-                            onClick={handleClear}
-                            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                        >
-                            Clear Filters
-                        </button>
                     </div>
                 </div>
             )}

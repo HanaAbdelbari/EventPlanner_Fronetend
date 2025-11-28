@@ -95,16 +95,69 @@ const DashboardPage = ({ userName, onLogout, onGoHome }) => {
         }
     };
 
+    // Format date consistently for search
+    const formatDateForSearch = (dateString) => {
+        if (!dateString) return null;
+
+        // Ensure the date is in YYYY-MM-DD format
+        const date = new Date(dateString);
+        return date.toISOString().split('T')[0];
+    };
+
+    // Client-side date filtering only
+    const filterEventsByDate = (events, date) => {
+        if (!date) return events;
+
+        const formattedDate = formatDateForSearch(date);
+        return events.filter(event => event.date === formattedDate);
+    };
+
     const handleSearch = async ({ keyword, date, role }) => {
+        console.log('Searching with:', { keyword, date, role });
+
         try {
+            // If all filters are empty, show all events
             if (!keyword && !date && !role) {
                 setFilteredEvents(events);
                 return;
             }
-            const results = await searchEvents(keyword, date, role);
-            setFilteredEvents(results || []);
+
+            // Use backend for keyword and role search
+            const results = await searchEvents(keyword, null, role); // Pass null for date to backend
+            console.log('Backend search results:', results);
+
+            // Apply client-side date filtering only
+            const dateFilteredResults = filterEventsByDate(results, date);
+            console.log('After date filtering:', dateFilteredResults);
+
+            setFilteredEvents(dateFilteredResults || []);
+
         } catch (error) {
             console.error('Search error:', error);
+            alert('Search failed: ' + error.message);
+
+            // Fallback: client-side filtering for all criteria
+            let filtered = [...events];
+
+            // Keyword search (client-side fallback)
+            if (keyword) {
+                const searchTerm = keyword.toLowerCase();
+                filtered = filtered.filter(event =>
+                    event.title?.toLowerCase().includes(searchTerm) ||
+                    event.description?.toLowerCase().includes(searchTerm) ||
+                    event.location?.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            // Role filter (client-side fallback)
+            if (role) {
+                filtered = filtered.filter(event => event.role === role);
+            }
+
+            // Date filter (always client-side)
+            filtered = filterEventsByDate(filtered, date);
+
+            setFilteredEvents(filtered);
         }
     };
 
@@ -311,17 +364,17 @@ const DashboardPage = ({ userName, onLogout, onGoHome }) => {
             </Modal>
 
             {/* Custom Animations */}
-            <style jsx>{`
+            <style jsx="true">{`
                 @keyframes float-bubble {
-                    0%, 100% { 
+                    0%, 100% {
                         transform: translateY(0px) translateX(0px) scale(1) rotate(0deg);
                         opacity: 0.3;
                     }
-                    33% { 
+                    33% {
                         transform: translateY(-20px) translateX(10px) scale(1.1) rotate(120deg);
                         opacity: 0.5;
                     }
-                    66% { 
+                    66% {
                         transform: translateY(10px) translateX(-15px) scale(0.9) rotate(240deg);
                         opacity: 0.2;
                     }

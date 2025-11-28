@@ -257,7 +257,7 @@ const HomePage = ({ onGetStarted, onLogin, isLoggedIn, onGoToDashboard }) => {
             </div>
 
             {/* Enhanced Custom Animations */}
-            <style jsx>{`
+            <style jsx="true">{`
                 @keyframes float-bubble {
                     0%, 100% { 
                         transform: translateY(0px) translateX(0px) scale(1) rotate(0deg);
