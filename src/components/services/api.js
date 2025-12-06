@@ -1,4 +1,5 @@
-const API_URL = 'http://localhost:8080/api';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 let authToken = null;
 
@@ -32,14 +33,27 @@ const apiCall = async (endpoint, method = 'GET', body = null) => {
         config.body = JSON.stringify(body);
     }
 
-    const response = await fetch(`${API_URL}${endpoint}`, config);
-    const data = await response.json();
+    try {
+        const response = await fetch(`${API_URL}${endpoint}`, config);
+        const text = await response.text();
 
-    if (!response.ok) {
-        throw new Error(data.message || 'Something went wrong');
+        let data;
+        try {
+            data = text ? JSON.parse(text) : {};
+        } catch (parseError) {
+            console.error('Failed to parse response:', text);
+            throw new Error('Server returned invalid response');
+        }
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Something went wrong');
+        }
+
+        return data;
+    } catch (error) {
+        console.error('API call error:', error);
+        throw error;
     }
-
-    return data;
 };
 
 export default apiCall;
