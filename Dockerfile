@@ -3,7 +3,7 @@
 #WORKDIR /app
 #COPY package*.json ./
 #RUN npm ci
-#RUN npm install -g vite
+#
 #COPY . .
 #RUN npm run build
 #
@@ -12,24 +12,38 @@
 #COPY --from=build /app/dist /usr/share/nginx/html
 #CMD ["nginx", "-g", "daemon off;"]
 
-# -------- Stage 1: Build --------
+# Stage 1: Build
 FROM node:18-alpine AS build
 WORKDIR /app
+
+# Install dependencies
 COPY package*.json ./
 RUN npm ci
 RUN npm install -g vite
+
+# Copy source and build
 COPY . .
 RUN npm run build
 
-# -------- Stage 2: OpenShift-safe nginx --------
+# Stage 2: Production
 FROM nginxinc/nginx-unprivileged:latest
 
-# Copy built files with proper ownership
-COPY --chown=101:101 --from=build /app/dist /usr/share/nginx/html
+# Switch to root to copy files
+USER root
 
-# Copy the fixed config
-COPY nginx.conf /etc/nginx/nginx.conf
+# Copy nginx config
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy built app from Stage 1
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Adjust permissions for non-root user
+RUN chown -R nginx:nginx /usr/share/nginx/html
+
+# Switch back to non-root user
+USER nginx
 
 EXPOSE 8080
 
+# Correct CMD to run nginx
 CMD ["nginx", "-g", "daemon off;"]
