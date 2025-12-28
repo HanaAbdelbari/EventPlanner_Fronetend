@@ -31,8 +31,11 @@ FROM nginxinc/nginx-unprivileged:latest
 # Switch to root to copy files
 USER root
 
-# Copy nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy nginx config to main location
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Remove the default config from conf.d
+RUN rm -f /etc/nginx/conf.d/default.conf
 
 # Copy built app from Stage 1
 COPY --from=build /app/dist /usr/share/nginx/html
