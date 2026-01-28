@@ -2,7 +2,7 @@
 
 Modern React frontend for the **EventPlanner** application — a platform for creating, discovering, and managing events.
 
-Built with **Vite + React + Tailwind CSS**.
+The frontend is a production-ready React + Vite application served using **Nginx** inside a Docker container.
 
 ## ✨ Features
 
@@ -71,12 +71,33 @@ cd EventPlanner_Frontend
  npm run dev
 ```
 
-→ Open http://localhost:5173 
-
 4. 🐳 Docker Usage
 ```bash
   docker build -t eventplanner-frontend:latest .
 ```
+Create the Network (do this once)
+   Frontend needs to communicate with the backend container, so it must be on the same network:
+   ```bash
+     docker network create frontend-net
+   ```
+Run the Frontend Container
+```bash
+     docker run -d \
+   --name eventplanner-frontend \
+   --net frontend-net \
+   -p 80:80 \
+   eventplanner-frontend:latest
+   ```
+Stop & remove frontend container
+```bash
+  docker stop eventplanner-frontend
+ ``` 
+```bash
+  docker rm eventplanner-frontend
+ ``` 
+
+→ Open http://localhost:5173
+   
 ## 📄 License
 MIT
 
